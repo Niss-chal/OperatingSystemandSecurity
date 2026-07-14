@@ -45,9 +45,40 @@ void *threadThree(void *arg)
     sem_wait(&semaphore);
     sem_wait(&semaphore);
 
-    printf("Thread 3 is scheduling processes\n");
-    sleep(1);
-    printf("Thread 3 completed\n");
+    int burstTime[4] = {7,9,5,2};
+    int remainingTime[4] = {7,9,5,2};
+    int quantum = 3;
+    int completed = 0;
+
+    printf("\nThread 3 is starting round-robin scheduling\n");
+
+    while (completed < 4)
+    {
+        for (int i = 0; i < 4; i++)
+        {
+            if (remainingTime[i] > 0)
+            {
+                printf("Process P%d is running\n", i + 1);
+
+                if (remainingTime[i] > quantum)
+                {
+                    remainingTime[i] = remainingTime[i] - quantum;
+                    printf("P%d remaining time: %d\n",
+                           i + 1, remainingTime[i]);
+                }
+                else
+                {
+                    remainingTime[i] = 0;
+                    printf("P%d completed\n", i + 1);
+                    completed++;
+                }
+
+                sleep(1);
+            }
+        }
+    }
+
+    printf("Thread 3 completed scheduling\n");
 
     return NULL;
 }
@@ -67,7 +98,7 @@ int main()
     pthread_join(thread2, NULL);
     pthread_join(thread3, NULL);
 
-    printf("Completed tasks: %d\n", completedTasks);
+    printf("\nCompleted tasks: %d\n", completedTasks);
     printf("All threads completed\n");
 
     pthread_mutex_destroy(&lock);
