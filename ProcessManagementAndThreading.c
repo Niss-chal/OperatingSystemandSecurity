@@ -6,12 +6,24 @@
 int completedTasks = 0;
 
 pthread_mutex_t lock;
+pthread_mutex_t resource1;
+pthread_mutex_t resource2;
+
 sem_t semaphore;
 
 void *threadOne(void *arg)
 {
     printf("Thread 1 is checking system information\n");
+
+    // Same lock order prevents deadlock
+    pthread_mutex_lock(&resource1);
+    pthread_mutex_lock(&resource2);
+
+    printf("Thread 1 is using shared resources\n");
     sleep(1);
+
+    pthread_mutex_unlock(&resource2);
+    pthread_mutex_unlock(&resource1);
 
     pthread_mutex_lock(&lock);
     completedTasks++;
@@ -27,7 +39,16 @@ void *threadOne(void *arg)
 void *threadTwo(void *arg)
 {
     printf("Thread 2 is checking memory\n");
+
+    // Same lock order prevents deadlock
+    pthread_mutex_lock(&resource1);
+    pthread_mutex_lock(&resource2);
+
+    printf("Thread 2 is using shared resources\n");
     sleep(1);
+
+    pthread_mutex_unlock(&resource2);
+    pthread_mutex_unlock(&resource1);
 
     pthread_mutex_lock(&lock);
     completedTasks++;
@@ -45,8 +66,7 @@ void *threadThree(void *arg)
     sem_wait(&semaphore);
     sem_wait(&semaphore);
 
-    int burstTime[4] = {7,9,5,2};
-    int remainingTime[4] = {7,9,5,2};
+    int remainingTime[4] = {7, 9, 5, 2};
     int quantum = 3;
     int completed = 0;
 
@@ -62,7 +82,8 @@ void *threadThree(void *arg)
 
                 if (remainingTime[i] > quantum)
                 {
-                    remainingTime[i] = remainingTime[i] - quantum;
+                    remainingTime[i] -= quantum;
+
                     printf("P%d remaining time: %d\n",
                            i + 1, remainingTime[i]);
                 }
@@ -88,6 +109,9 @@ int main()
     pthread_t thread1, thread2, thread3;
 
     pthread_mutex_init(&lock, NULL);
+    pthread_mutex_init(&resource1, NULL);
+    pthread_mutex_init(&resource2, NULL);
+
     sem_init(&semaphore, 0, 0);
 
     pthread_create(&thread1, NULL, threadOne, NULL);
@@ -102,6 +126,9 @@ int main()
     printf("All threads completed\n");
 
     pthread_mutex_destroy(&lock);
+    pthread_mutex_destroy(&resource1);
+    pthread_mutex_destroy(&resource2);
+
     sem_destroy(&semaphore);
 
     return 0;
