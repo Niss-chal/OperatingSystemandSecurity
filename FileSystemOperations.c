@@ -1,26 +1,64 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+#include <sys/stat.h>
 
 int main()
 {
     FILE *file;
-    int choice;
+    int choice, permission;
+    char filename[50];
     char text[200];
+    char username[20];
+    char password[20];
 
-    printf("1. Create and write file\n");
-    printf("2. Read file\n");
-    printf("3. Delete file\n");
+    printf("Enter username: ");
+    scanf("%s", username);
+
+    printf("Enter password: ");
+    scanf("%s", password);
+
+    if (strcmp(username, "admin") != 0 ||
+        strcmp(password, "linux") != 0)
+    {
+        printf("Authentication failed\n");
+        return 1;
+    }
+
+    printf("Login successful\n\n");
+
+    printf("1. Create file\n");
+    printf("2. Write file\n");
+    printf("3. Read file\n");
+    printf("4. Delete file\n");
+    printf("5. Set file permission\n");
     printf("Enter your choice: ");
     scanf("%d", &choice);
+
+    printf("Enter file name: ");
+    scanf("%s", filename);
     getchar();
 
     if (choice == 1)
     {
-        file = fopen("myfile.txt", "w");
+        file = fopen(filename, "w");
 
         if (file == NULL)
         {
             printf("File could not be created\n");
+            return 1;
+        }
+
+        fclose(file);
+        printf("File created successfully\n");
+    }
+    else if (choice == 2)
+    {
+        file = fopen(filename, "w");
+
+        if (file == NULL)
+        {
+            printf("File could not be opened\n");
             return 1;
         }
 
@@ -30,15 +68,15 @@ int main()
         fprintf(file, "%s", text);
         fclose(file);
 
-        printf("File created and written successfully\n");
+        printf("File written successfully\n");
     }
-    else if (choice == 2)
+    else if (choice == 3)
     {
-        file = fopen("myfile.txt", "r");
+        file = fopen(filename, "r");
 
         if (file == NULL)
         {
-            printf("File does not exist\n");
+            printf("File does not exist or permission denied\n");
             return 1;
         }
 
@@ -51,15 +89,29 @@ int main()
 
         fclose(file);
     }
-    else if (choice == 3)
+    else if (choice == 4)
     {
-        if (remove("myfile.txt") == 0)
+        if (remove(filename) == 0)
         {
             printf("File deleted successfully\n");
         }
         else
         {
             printf("File could not be deleted\n");
+        }
+    }
+    else if (choice == 5)
+    {
+        printf("Enter permission such as 755 or 644: ");
+        scanf("%o", &permission);
+
+        if (chmod(filename, permission) == 0)
+        {
+            printf("File permission changed successfully\n");
+        }
+        else
+        {
+            printf("File does not exist\n");
         }
     }
     else
