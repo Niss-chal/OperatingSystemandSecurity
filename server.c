@@ -27,9 +27,16 @@ int main()
 
     read(clientSocket, message, sizeof(message));
 
-    printf("Message from client: %s\n", message);
+    printf("Data received: %s\n", message);
 
-    strcpy(message, "Hello from server");
+    if (strncmp(message, "MSG:", 4) == 0)
+    {
+        strcpy(message, "ACK:Message received");
+    }
+    else
+    {
+        strcpy(message, "ERROR:Invalid protocol");
+    }
 
     send(clientSocket, message, strlen(message) + 1, 0);
 

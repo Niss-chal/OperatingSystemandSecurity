@@ -19,13 +19,13 @@ int main()
             (struct sockaddr *)&serverAddress,
             sizeof(serverAddress));
 
-    strcpy(message, "Hello from client");
+    strcpy(message, "MSG:Hello from client side!!");
 
     send(clientSocket, message, strlen(message) + 1, 0);
 
     read(clientSocket, message, sizeof(message));
 
-    printf("Message from server: %s\n", message);
+    printf("Server response: %s\n", message);
 
     close(clientSocket);
 
